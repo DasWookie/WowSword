@@ -88,9 +88,35 @@ void checkModeSwitch() {
     if (setBrightness <= minBrightness) {
       setBrightness = minBrightness;
     }
-  }
-  // TODO: Show current mode by setting LEDs to a pattern or other visual cue other than brightness to show current mode
+
+    // On Mode change, blink the sword currentMode+1 number of times to show which mode you are currently set to
+    for(int displayMode = 1; displayMode >= currentMode+1; displayMode++) {
+      for(uint16_t i = 0; i < LED_COUNT; i++)
+      {
+        colors1[i] = (rgb_color){
+          random(setBrightness), random(setBrightness), random(setBrightness) };
+      }
+      // Write the colors to the LED strip.
+      ledStrip1.write(colors1, LED_COUNT);  
+      ledStrip2.write(colors1, LED_COUNT);
+      
+      delay(100);
+
+      for(uint16_t i = 0; i < LED_COUNT; i++)
+      {
+        colors1[i] = (rgb_color){ 
+          0, 0, 0 };
+      }
   
+      // Write the colors to the LED strip.
+      ledStrip1.write(colors1, LED_COUNT);  
+      ledStrip2.write(colors1, LED_COUNT);
+      delay(100);
+    }
+
+    delay(hitDelay * 3);                              // crude debounce just to make sure we don't skip over modes too quickly.
+      
+  }
 }
 
 void checkHit() {
