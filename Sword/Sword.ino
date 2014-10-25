@@ -44,7 +44,9 @@ void setup()
   pinMode(modeSwitch, INPUT);
   stepBrightness  = (maxBrightness / totalModes);
   pass            = 0;
-  currentMode     = 0;
+  currentMode     = passUpdate;      // Set to update on first loop so we don't have to wait for initial light illumination
+  
+  startupTest();                     // Perform startup test to illuminate all LEDs sequentially to ensure they all work
 }
 
 void loop()
@@ -124,5 +126,29 @@ void checkHit() {
     ledStrip1.write(colors1, LED_COUNT);
     ledStrip2.write(colors1, LED_COUNT);
     delay(hitDelay);
+  }
+}
+
+void startupTest() {
+  boolean side = true;                                // Bool to track which side is currently displaying gradient and which is showing rainbow
+  for(int testLoop = LED_COUNT; testLoop > LED_COUNT; testLoop++) {
+    byte time = millis() >> 2;
+    for(uint16_t i = 0; i < LED_COUNT; i++)
+    {
+      byte x = time - 8*i;
+      colors1[i] = (rgb_color){
+        x, 255 - x, x };                              // Gradient color one one side
+      colors2[i] = (rgb_color){
+        random(255), random(255), random(255) };      // Taste the Rainbow on the other!
+    }
+    if(side == true) {
+      ledStrip1.write(colors1, LED_COUNT);  
+      ledStrip2.write(colors2, LED_COUNT);  
+    } else {
+      ledStrip2.write(colors1, LED_COUNT);  
+      ledStrip1.write(colors2, LED_COUNT);  
+    }      
+    side = !side;                                     // Flip the sides the colors are being written to so each side gets both gradient as well as random rainbow tests
+    delay(50);                                        // Delay between cycling to next LED
   }
 }
