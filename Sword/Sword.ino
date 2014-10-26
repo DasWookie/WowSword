@@ -78,16 +78,19 @@ void checkModeSwitch() {
     }
 
     // On Mode change, blink the sword currentMode+1 number of times to show which mode you are currently set to
-    for(int displayMode = 1; displayMode >= currentMode+1; displayMode++) {
+    blink(currentMode+1);
+    delay(hitDelay * 3);                              // crude debounce just to make sure we don't skip over modes too quickly.      
+  }
+}
+
+void blink(int count) {
+    for(int i = 1; i <= count; i++) {
       rainbow();
-      delay(100);
+      delay(250);
 
       off();
       delay(100);
     }
-
-    delay(hitDelay * 3);                              // crude debounce just to make sure we don't skip over modes too quickly.      
-  }
 }
 
 void checkHit() {
@@ -103,11 +106,7 @@ void green() {
     {
       colors1[i] = (rgb_color){ 
         0, random(setBrightness), 0     };
-    }
-  
-    for(uint16_t i = 0; i < LED_COUNT; i++)
-    {
-      colors2[i] = (rgb_color){ 
+      colors2[i] = (rgb_color){
         0, random(setBrightness), 0     };
     }
     ledStrip1.write(colors1, LED_COUNT);  
