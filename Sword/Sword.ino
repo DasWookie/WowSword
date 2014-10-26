@@ -54,21 +54,7 @@ void loop()
   pass++;                  // Increment pass count, we use this rather than large delays at each loop so we can keep the loops tight for hit detection
   checkHit();              // Let the bodies hit the floor!
   if (pass >= passUpdate) {
-    // Update the colors.
-    byte time = millis() >> 2;
-    for(uint16_t i = 0; i < LED_COUNT; i++)
-    {
-      colors1[i] = (rgb_color){ 
-        0, random(setBrightness), 0     };
-    }
-  
-    for(uint16_t i = 0; i < LED_COUNT; i++)
-    {
-      colors2[i] = (rgb_color){ 
-        0, random(setBrightness), 0     };
-    }
-    ledStrip1.write(colors1, LED_COUNT);  
-    ledStrip2.write(colors2, LED_COUNT);
+    green();
     pass = 0;
   } else {
     delay(1);
@@ -93,22 +79,10 @@ void checkModeSwitch() {
 
     // On Mode change, blink the sword currentMode+1 number of times to show which mode you are currently set to
     for(int displayMode = 1; displayMode >= currentMode+1; displayMode++) {
-      for(uint16_t i = 0; i < LED_COUNT; i++)
-      {
-        colors1[i] = (rgb_color){
-          random(setBrightness), random(setBrightness), random(setBrightness) };      // Taste the Rainbow!
-      }
-      ledStrip1.write(colors1, LED_COUNT);  
-      ledStrip2.write(colors1, LED_COUNT);      
+      rainbow();
       delay(100);
 
-      for(uint16_t i = 0; i < LED_COUNT; i++)
-      {
-        colors1[i] = (rgb_color){ 
-          0, 0, 0 };
-      }
-      ledStrip1.write(colors1, LED_COUNT);  
-      ledStrip2.write(colors1, LED_COUNT);
+      off();
       delay(100);
     }
 
@@ -119,14 +93,54 @@ void checkModeSwitch() {
 void checkHit() {
   hitSensorReading = digitalRead(hitSensor);    
   if (hitSensorReading == HIGH) {                     // We've got an impact, show the BLOOD!
+    red();
+    delay(hitDelay);
+  }
+}
+
+void green() {
+    for(uint16_t i = 0; i < LED_COUNT; i++)
+    {
+      colors1[i] = (rgb_color){ 
+        0, random(setBrightness), 0     };
+    }
+  
+    for(uint16_t i = 0; i < LED_COUNT; i++)
+    {
+      colors2[i] = (rgb_color){ 
+        0, random(setBrightness), 0     };
+    }
+    ledStrip1.write(colors1, LED_COUNT);  
+    ledStrip2.write(colors2, LED_COUNT);
+}
+
+void red() {
     for(uint16_t i = 0; i < LED_COUNT; i++) {
       colors1[i] = (rgb_color){ 
         random(maxBrightness), 0, 0};                 // Deliberate override of users set current mode. Using MAX brightness rather than SET, to be RED, which if set dim could be rather... pink.
     }
     ledStrip1.write(colors1, LED_COUNT);
     ledStrip2.write(colors1, LED_COUNT);
-    delay(hitDelay);
-  }
+}
+
+void rainbow() {
+        for(uint16_t i = 0; i < LED_COUNT; i++)
+      {
+        colors1[i] = (rgb_color){
+          random(setBrightness), random(setBrightness), random(setBrightness) };      // Taste the Rainbow!
+      }
+      ledStrip1.write(colors1, LED_COUNT);  
+      ledStrip2.write(colors1, LED_COUNT);      
+}
+
+void off() {
+      for(uint16_t i = 0; i < LED_COUNT; i++)
+      {
+        colors1[i] = (rgb_color){ 
+          0, 0, 0 };
+      }
+      ledStrip1.write(colors1, LED_COUNT);  
+      ledStrip2.write(colors1, LED_COUNT);
 }
 
 void startupTest() {
