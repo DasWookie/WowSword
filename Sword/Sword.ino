@@ -12,6 +12,7 @@ PololuLedStrip<12> ledStrip2;
 // Create READ pin for impact sensor
 #define hitSensor  A0                // Using an analog pin would allow for either a vibration (piezo) or mechanical switch to be used. Using a piezo would require filtering for threshold minimum levels.  
 #define modeSwitch 10                // Use a SPST momentary contact switch
+#define heartbeat  13
 
 // Create a buffer for holding the colors (3 bytes per color).
 #define LED_COUNT  55
@@ -21,6 +22,7 @@ rgb_color          colors2[LED_COUNT];
 // State Variables
 bool               hitSensorReading;
 bool               modeSwitchReading;
+bool               heart;
 int                hitDelay;
 int                pass;
 int                passUpdate;
@@ -36,14 +38,16 @@ void setup()
   totalModes      = 5;               // Total number of dimness levels / too high of granularity will make it difficult to tell which mode you are in but greater granularity of battery life
   minBrightness   = 25;              // Lowest level of illumination  (0 is off recommend not going under 25)
   maxBrightness   = 255;             // Maximum level of illumination (255 max)
-  hitDelay        = 150;             // Amount of time in milliseconds to show RED after an impact/hit is detected
-  passUpdate      = 20;              // Number of loops before we update the LED colors. In general each pass should take about 1ms, but that MAY differ based on the frequency of your crystal and the specific microcontroller used
+  hitDelay        = 250;             // Amount of time in milliseconds to show RED after an impact/hit is detected
+  passUpdate      = 100;              // Number of loops before we update the LED colors. In general each pass should take about 1ms, but that MAY differ based on the frequency of your crystal and the specific microcontroller used
 
   // Globals
   pinMode(hitSensor, INPUT);
   pinMode(modeSwitch, INPUT);
+  pinMode(heartbeat, OUTPUT); 
   stepBrightness  = (maxBrightness / totalModes);
   pass            = 0;
+  heart           = true;
   currentMode     = passUpdate;      // Set to update on first loop so we don't have to wait for initial light illumination
   
   startupTest();                     // Perform startup test to illuminate all LEDs sequentially to ensure they all work
@@ -55,8 +59,11 @@ void loop()
   checkHit();              // Let the bodies hit the floor!
   if (pass >= passUpdate) {
     green();
+    digitalWrite(heartbeat, heart);   // set the heartbeat LED state
+    heart = !heart;                   // toggle the status on/off;
     pass = 0;
   } else {
+    checkModeSwitch();        // See if our mode has changed
     delay(1);
   }
 }
