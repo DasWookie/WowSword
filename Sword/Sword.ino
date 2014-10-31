@@ -41,9 +41,9 @@ void setup()
   pinMode(heartbeat, OUTPUT); 
   stepBrightness  = (maxBrightness / totalModes);
   pass            = passUpdate;       // Set to update on first loop so we don't have to wait for initial light illumination
-  currentMode     = totalModes;       // Set initial light illumination level to brightest level (0 = dimmest, total modes = brightest)
-
+  currentMode     = totalModes-1;     // Set initial light illumination level to brightest level (0 = dimmest, total modes = brightest)
   startupTest();                      // Perform startup test to illuminate all LEDs sequentially to ensure they all work
+  setBrightLevel();                   // Set the initial brightness levels and display current mode
 }
 
 void loop()
@@ -63,12 +63,16 @@ void loop()
 
 void checkModeSwitch() {
   modeSwitchReading = digitalRead(modeSwitch);    
-
-  if (modeSwitchReading == HIGH) {
+    if (modeSwitchReading == HIGH) {
     currentMode++;
-    if (currentMode >= totalModes) {
-      currentMode = 0;
+      if (currentMode >= totalModes) {
+        currentMode = 0;
+      }
+    setBrightLevel();
     }
+}
+
+void setBrightLevel() {
     setBrightness = stepBrightness + (stepBrightness * currentMode);
     if (setBrightness >= maxBrightness) {
       setBrightness = maxBrightness;
@@ -78,7 +82,6 @@ void checkModeSwitch() {
     }
     blink(currentMode+1);                             // On Mode change, blink the sword currentMode+1 (it's base 0) number of times to show which mode you are currently set to
     delay(hitDelay * 3);                              // crude debounce just to make sure we don't skip over modes too quickly.      
-  }
 }
 
 void blink(int count) {
