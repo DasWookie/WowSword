@@ -7,15 +7,17 @@
 
 // Pin assignments
 const byte         hitSensor  = A0;          // Using an analog pin would allow for either a vibration (piezo) or mechanical switch to be used. Using a piezo would require filtering for threshold minimum levels.  
-const byte         modeSwitch = 10;          // Use a SPST momentary contact switch
-PololuLedStrip<11> ledStrip1;                // Create ledStrip objects and specify pins used
-PololuLedStrip<12> ledStrip2;                // Create ledStrip objects and specify pins used
+const byte         modeSwitch = 3;           // Use a SPST momentary contact switch
+PololuLedStrip<6> ledStrip1;                // Create ledStrip objects and specify pins used - Blade Side 1
+PololuLedStrip<11> ledStrip2;                // Create ledStrip objects and specify pins used - Blade Side 2
+PololuLedStrip<9> ledStrip3;                // Create ledStrip objects and specify pins used - Pommel
 const byte         heartbeat  = 13;          // Pin to use to track sword heartbeat, pin 13 uses the onboard LED
 
 // Create a buffer for holding the colors (3 bytes per color).
-#define LED_COUNT  55
+#define LED_COUNT  75
 rgb_color          colors1[LED_COUNT];
 rgb_color          colors2[LED_COUNT];
+rgb_color          colors3[LED_COUNT];
 
 // State Variables
 bool               hitSensorReading;         // Value to determine if an impact has been detected
@@ -41,7 +43,7 @@ void setup()
   pinMode(heartbeat, OUTPUT); 
   stepBrightness  = (maxBrightness / totalModes);
   pass            = passUpdate;       // Set to update on first loop so we don't have to wait for initial light illumination
-  currentMode     = totalModes-1;     // Set initial light illumination level to brightest level (0 = dimmest, total modes = brightest)
+  currentMode     = totalModes;     // Set initial light illumination level to brightest level (0 = dimmest, total modes = brightest)
   startupTest();                      // Perform startup test to illuminate all LEDs sequentially to ensure they all work
   setBrightLevel();                   // Set the initial brightness levels and display current mode
 }
@@ -94,8 +96,8 @@ void blink(int count) {
 }
 
 void checkHit() {
-  hitSensorReading = digitalRead(hitSensor);    
-  if (hitSensorReading == HIGH) {                     // We've got an impact, show the BLOOD!
+  hitSensorReading = analogRead(hitSensor);    
+  if (hitSensorReading == LOW) {                     // We've got an impact, show the BLOOD!
     red();
     delay(hitDelay);
   }
@@ -108,9 +110,12 @@ void green() {
         0, illuminationLevel(setBrightness), 0};
       colors2[i] = (rgb_color){
         0, illuminationLevel(setBrightness), 0};
+      colors3[i] = (rgb_color){
+        0, illuminationLevel(setBrightness), 0};
     }
     ledStrip1.write(colors1, LED_COUNT);  
     ledStrip2.write(colors2, LED_COUNT);
+    ledStrip3.write(colors3, LED_COUNT);
 }
 
 void red() {                                        // Set the blade to RED to show the "blood" of an impact
@@ -119,9 +124,12 @@ void red() {                                        // Set the blade to RED to s
         illuminationLevel(maxBrightness), 0, 0};    // Deliberate override of users set current mode. Using MAX brightness rather than SET, to be RED, which if set dim could be rather... pink.
       colors2[i] = (rgb_color){
         illuminationLevel(maxBrightness), 0, 0};
+      colors3[i] = (rgb_color){
+        illuminationLevel(maxBrightness), 0, 0};
     }
     ledStrip1.write(colors1, LED_COUNT);
     ledStrip2.write(colors2, LED_COUNT);
+    ledStrip3.write(colors3, LED_COUNT);
 }
 
 void rainbow() {                                    // Taste the Rainbow!
@@ -132,6 +140,7 @@ void rainbow() {                                    // Taste the Rainbow!
     }
     ledStrip1.write(colors1, LED_COUNT);  
     ledStrip2.write(colors1, LED_COUNT);      
+    ledStrip3.write(colors1, LED_COUNT);      
 }
 
 int  illuminationLevel(int illumination) {          // Return a INT between minimum brightness level and max brightness level
@@ -150,6 +159,7 @@ void off() {
       }
       ledStrip1.write(colors1, LED_COUNT);  
       ledStrip2.write(colors1, LED_COUNT);
+      ledStrip3.write(colors1, LED_COUNT);
 }
 
 void startupTest() {
@@ -167,9 +177,11 @@ void startupTest() {
     if(side == true) {
       ledStrip1.write(colors1, LED_COUNT);  
       ledStrip2.write(colors2, LED_COUNT);  
+      ledStrip3.write(colors1, LED_COUNT);  
     } else {
-      ledStrip2.write(colors1, LED_COUNT);  
       ledStrip1.write(colors2, LED_COUNT);  
+      ledStrip2.write(colors1, LED_COUNT);  
+      ledStrip3.write(colors2, LED_COUNT);  
     }
     side = !side;                                     // Flip the sides the colors are being written to so each side gets both gradient as well as random rainbow tests
     delay(hitDelay);                                  // Delay between cycling to next LED
